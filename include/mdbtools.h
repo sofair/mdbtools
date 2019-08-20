@@ -27,7 +27,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#if  defined(_WIN32) && defined(_MSC_VER)
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#else
 #include <unistd.h>
+#endif
 #include <ctype.h>
 #include <string.h>
 #include <glib.h>
@@ -53,8 +58,36 @@
 
 // Theses 2 atrbutes are not supported by all compilers:
 // M$VC see http://stackoverflow.com/questions/1113409/attribute-constructor-equivalent-in-vc
+#if defined(_WIN32) &&  defined(_MSC_VER)
+#define MDB_DEPRECATED(type, funcname) __declspec(deprecated) type funcname
+#else
 #define MDB_DEPRECATED(type, funcname) type __attribute__((deprecated)) funcname
+#endif
+
+#ifdef __cplusplus
+#define INITIALIZER(f) \
+        static void f(void); \
+        struct f##_t_ { f##_t_(void) { f(); } }; static f##_t_ f##_; \
+        static void f(void)
+#elif defined(_MSC_VER)
+#pragma section(".CRT$XCU",read)
+#define INITIALIZER2_(f,p) \
+        static void f(void); \
+        __declspec(allocate(".CRT$XCU")) void (*f##_)(void) = f; \
+        __pragma(comment(linker,"/include:" p #f "_")) \
+        static void f(void)
+#ifdef _WIN64
+#define INITIALIZER(f) INITIALIZER2_(f,"")
+#else
+#define INITIALIZER(f) INITIALIZER2_(f,"_")
+#endif
+#define MDB_CONSTRUCTOR(funcname) INITIALIZER(funcname)
+#else
 #define MDB_CONSTRUCTOR(funcname) void __attribute__((constructor)) funcname()
+#define INITIALIZER(f) \
+        static void f(void) __attribute__((constructor)); \
+        static void f(void)
+#endif
 
 enum {
 	MDB_PAGE_DB = 0,

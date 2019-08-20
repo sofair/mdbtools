@@ -42,7 +42,9 @@ static char *array_to_string(unsigned char *array, int unsigned scale, int neg);
  */
 char *mdb_money_to_string(MdbHandle *mdb, int start)
 {
-	const int num_bytes=8, scale=4;
+#define num_bytes 8
+#define scale 4
+//	const int num_bytes=8, scale=4;
 	int i;
 	int neg=0;
        unsigned char multiplier[MAX_NUMERIC_PRECISION], temp[MAX_NUMERIC_PRECISION];
@@ -76,11 +78,14 @@ char *mdb_money_to_string(MdbHandle *mdb, int start)
 		multiply_byte(multiplier, 256, temp);
 	}
        return array_to_string(product, scale, neg);
+#undef scale
+#undef num_bytes
 
 }
 
 char *mdb_numeric_to_string(MdbHandle *mdb, int start, int prec, int scale) {
-       const int num_bytes = 16;
+#define  num_bytes 16
+//	const int num_bytes = 16;
        int i;
        int neg=0;
        unsigned char multiplier[MAX_NUMERIC_PRECISION], temp[MAX_NUMERIC_PRECISION];
@@ -104,6 +109,7 @@ char *mdb_numeric_to_string(MdbHandle *mdb, int start, int prec, int scale) {
                multiply_byte(multiplier, 256, temp);
        }
        return array_to_string(product, scale, neg);
+#undef num_bytes
 }
 
 static int multiply_byte(unsigned char *product, int num, unsigned char *multiplier)

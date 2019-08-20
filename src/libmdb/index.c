@@ -180,6 +180,8 @@ mdb_read_indices(MdbTableDef *table)
 	int index_start_pg = mdb->cur_pg;
 	gchar *tmpbuf;
 
+	pidx = NULL;
+
 	table->indices = g_ptr_array_new();
 
 	if (IS_JET3(mdb)) {
